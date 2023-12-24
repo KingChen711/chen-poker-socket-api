@@ -7,6 +7,6 @@ const router = express.Router()
 
 router.post('/', validateData(CreateUserSchema), createUser)
 router.put('/:clerkId', validateData(UpdateUserSchema), updateUser)
-router.put('/:clerkId', validateData(DeleteUserSchema), deleteUser)
+router.delete('/:clerkId', validateData(DeleteUserSchema), deleteUser)
 
 export { router as userRoute }
