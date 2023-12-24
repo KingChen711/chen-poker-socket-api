@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  clerkId       String   @unique
+  email         String   @unique
+  username      String   @unique
+  name          String
+  createdAt     DateTime @default(now())
+  currentRoomId String   @db.ObjectId
+}
+
+model Room {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  roomCode  String
+  roomOwner String
+  players   Player[]
+  gameObj   GameObj?
+  status    GameStatus
+}
+
+type GameObj {
+  dealerIndex     Int
+  turn            Int
+  callingValue    Int
+  deck            Card[]
+  dealer          String
+  smallBlind      String
+  bigBlind        String
+  foldPlayers     String[]
+  communityCards  Card[]
+  checkingPlayers String[]
+  allInPlayers    String[]
+  readyPlayers    String[]
+  winner          String?
+}
+
+type Player {
+  userId  String @db.ObjectId
+  //user
+  hand    Hand?
+  balance Int?
+  bet     Int?
+}
+
+type Hand {
+  holeCards  Card[]
+  rank       Int? //Rank: -1->9
+  pokerCards Card[]
+}
+
+type Card {
+  value Int //CardValue:2->14
+  suit  Int //CardSuit:0-3
+}
+
+enum GameStatus {
+  PreGame
+  PreFlop
+  TheFlop
+  TheTurn
+  TheRiver
+  Showdown
+}
+
+// enum CardSuit {
+//   Spade
+//   Club
+//   Diamond
+//   Heart
+// }
+
+// enum CardValue {
+//   Two = 2
+//   Three = 3
+//   Four = 4
+//   Five = 5
+//   Six = 6
+//   Seven = 7
+//   Eight = 8
+//   Nine = 9
+//   Ten = 10
+//   Jack = 11
+//   Queen = 12
+//   King = 13
+//   Ace = 14
+// }
+
+// enum Rank {
+//   Fold = -1,
+//   HighCard,
+//   OnePair,
+//   TwoPair,
+//   ThreeOfKind,
+//   Straight,
+//   Flush,
+//   FullHouse,
+//   FourOfKind,
+//   StraightFlush,
+//   RoyalFlush
+// }
