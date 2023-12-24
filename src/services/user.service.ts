@@ -11,7 +11,7 @@ const createUser = async (params: CreateUserParams): Promise<User> => {
 const updateUser = async (params: UpdateUserParams): Promise<User> => {
   return await prisma.user.update({
     where: {
-      id: params.id
+      clerkId: params.clerkId
     },
     data: params
   })
@@ -20,7 +20,7 @@ const updateUser = async (params: UpdateUserParams): Promise<User> => {
 const deleteUser = async (params: DeleteUserParams): Promise<User> => {
   return await prisma.user.delete({
     where: {
-      id: params.id
+      clerkId: params.clerkId
     }
   })
 }

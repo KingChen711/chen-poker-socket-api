@@ -6,7 +6,7 @@ import { CreateUserSchema, DeleteUserSchema, UpdateUserSchema } from '~/validati
 const router = express.Router()
 
 router.post('/', validateData(CreateUserSchema), createUser)
-router.put('/:id', validateData(UpdateUserSchema), updateUser)
-router.put('/:id', validateData(DeleteUserSchema), deleteUser)
+router.put('/:clerkId', validateData(UpdateUserSchema), updateUser)
+router.put('/:clerkId', validateData(DeleteUserSchema), deleteUser)
 
 export { router as userRoute }

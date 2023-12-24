@@ -9,7 +9,7 @@ export type CreateUserParams = {
 }
 
 export type DeleteUserParams = {
-  id: string
+  clerkId: string
 }
 
-export type UpdateUserParams = Partial<User>
+export type UpdateUserParams = Partial<User> & { clerkId: string }

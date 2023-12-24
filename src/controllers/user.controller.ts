@@ -19,10 +19,10 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
   try {
     const {
       body,
-      params: { id }
+      params: { clerkId }
     } = req as unknown as TUpdateUserSchema
 
-    const user = await userService.updateUser({ ...body, id })
+    const user = await userService.updateUser({ ...body, clerkId })
 
     res.status(StatusCodes.OK).json({ user })
   } catch (error) {
@@ -33,10 +33,10 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
 export const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const {
-      params: { id }
+      params: { clerkId }
     } = req as unknown as TDeleteUserSchema
 
-    const user = await userService.deleteUser({ id })
+    const user = await userService.deleteUser({ clerkId })
 
     res.status(StatusCodes.OK).json({ user })
   } catch (error) {

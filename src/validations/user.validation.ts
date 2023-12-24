@@ -14,7 +14,7 @@ export type TCreateUserSchema = z.infer<typeof CreateUserSchema>
 
 export const UpdateUserSchema = z.object({
   params: z.object({
-    id: z.string()
+    clerkId: z.string()
   }),
   body: z.object({
     name: z.coerce.string().trim().min(1).optional(),
@@ -27,7 +27,7 @@ export type TUpdateUserSchema = z.infer<typeof UpdateUserSchema>
 
 export const DeleteUserSchema = z.object({
   params: z.object({
-    id: z.string()
+    clerkId: z.string()
   })
 })
 
