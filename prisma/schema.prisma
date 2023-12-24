@@ -13,8 +13,9 @@ model User {
   email         String   @unique
   username      String   @unique
   name          String
+  picture       String
   createdAt     DateTime @default(now())
-  currentRoomId String   @db.ObjectId
+  currentRoomId String?   @db.ObjectId
 }
 
 model Room {
