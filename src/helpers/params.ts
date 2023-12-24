@@ -12,4 +12,16 @@ export type DeleteUserParams = {
   clerkId: string
 }
 
+export type GetUserByClerkIdParams = {
+  clerkId: string
+}
+
+export type GetUserByIdParams = {
+  id: string
+}
+
 export type UpdateUserParams = Partial<User> & { clerkId: string }
+
+export type CreateRoomParams = { clerkId: string }
+
+export type LeaveRoomParams = { clerkId: string }

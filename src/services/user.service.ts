@@ -1,5 +1,13 @@
 import { PrismaClient, User } from '@prisma/client'
-import { CreateUserParams, DeleteUserParams, UpdateUserParams } from '~/helpers/params'
+import { StatusCodes } from 'http-status-codes'
+import ApiError from '~/helpers/api-error'
+import {
+  CreateUserParams,
+  DeleteUserParams,
+  GetUserByClerkIdParams,
+  GetUserByIdParams,
+  UpdateUserParams
+} from '~/helpers/params'
 const prisma = new PrismaClient()
 
 const createUser = async (params: CreateUserParams): Promise<User> => {
@@ -25,10 +33,43 @@ const deleteUser = async (params: DeleteUserParams): Promise<User> => {
   })
 }
 
+const getUserByClerkId = async (params: GetUserByClerkIdParams): Promise<User | null> => {
+  return await prisma.user.findUnique({
+    where: {
+      clerkId: params.clerkId
+    }
+  })
+}
+
+const getRequiredUserByClerkId = async (params: GetUserByClerkIdParams): Promise<User> => {
+  const user = await prisma.user.findUnique({
+    where: {
+      clerkId: params.clerkId
+    }
+  })
+
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Not found user!')
+  }
+
+  return user
+}
+
+const getUserById = async (params: GetUserByIdParams): Promise<User | null> => {
+  return await prisma.user.findUnique({
+    where: {
+      id: params.id
+    }
+  })
+}
+
 const userService = {
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  getUserByClerkId,
+  getUserById,
+  getRequiredUserByClerkId
 }
 
 export { userService }

@@ -15,13 +15,13 @@ model User {
   name          String
   picture       String
   createdAt     DateTime @default(now())
-  currentRoomId String?   @db.ObjectId
+  currentRoomId String?  @db.ObjectId
 }
 
 model Room {
   id        String     @id @default(auto()) @map("_id") @db.ObjectId
   roomCode  String
-  roomOwner String
+  roomOwner String     @db.ObjectId
   players   Player[]
   gameObj   GameObj?
   status    GameStatus
@@ -32,15 +32,15 @@ type GameObj {
   turn            Int
   callingValue    Int
   deck            Card[]
-  dealer          String
-  smallBlind      String
-  bigBlind        String
-  foldPlayers     String[]
+  dealer          String   @db.ObjectId
+  smallBlind      String   @db.ObjectId
+  bigBlind        String   @db.ObjectId
+  foldPlayers     String[] @db.ObjectId
+  checkingPlayers String[] @db.ObjectId
+  allInPlayers    String[] @db.ObjectId
+  readyPlayers    String[] @db.ObjectId
   communityCards  Card[]
-  checkingPlayers String[]
-  allInPlayers    String[]
-  readyPlayers    String[]
-  winner          String?
+  winner          String?  @db.ObjectId
 }
 
 type Player {
@@ -63,12 +63,12 @@ type Card {
 }
 
 enum GameStatus {
-  PreGame
-  PreFlop
-  TheFlop
-  TheTurn
-  TheRiver
-  Showdown
+  PRE_GAME
+  PRE_FLOP
+  THE_FLOP
+  THE_TURN
+  THE_RIVER
+  SHOWDOWN
 }
 
 // enum CardSuit {

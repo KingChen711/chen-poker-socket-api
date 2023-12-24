@@ -11,5 +11,7 @@ export const errorHandlingMiddleware = (err: ApiError, req: Request, res: Respon
     stack: err.stack
   }
 
+  console.log(responseError)
+
   res.status(responseError.statusCode).json(responseError)
 }

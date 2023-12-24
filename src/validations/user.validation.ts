@@ -10,8 +10,6 @@ export const CreateUserSchema = z.object({
   })
 })
 
-export type TCreateUserSchema = z.infer<typeof CreateUserSchema>
-
 export const UpdateUserSchema = z.object({
   params: z.object({
     clerkId: z.string()
@@ -19,11 +17,10 @@ export const UpdateUserSchema = z.object({
   body: z.object({
     name: z.coerce.string().trim().min(1).optional(),
     picture: z.coerce.string().trim().url().optional(),
-    username: z.coerce.string().trim().min(1).optional()
+    username: z.coerce.string().trim().min(1).optional(),
+    currentRoomId: z.coerce.string().trim().min(1).optional()
   })
 })
-
-export type TUpdateUserSchema = z.infer<typeof UpdateUserSchema>
 
 export const DeleteUserSchema = z.object({
   params: z.object({
@@ -31,4 +28,20 @@ export const DeleteUserSchema = z.object({
   })
 })
 
+export const GetUserByClerkIdSchema = z.object({
+  query: z.object({
+    clerkId: z.string()
+  })
+})
+
+export const GetUserByIdSchema = z.object({
+  params: z.object({
+    id: z.string()
+  })
+})
+
+export type TCreateUserSchema = z.infer<typeof CreateUserSchema>
+export type TUpdateUserSchema = z.infer<typeof UpdateUserSchema>
 export type TDeleteUserSchema = z.infer<typeof DeleteUserSchema>
+export type TGetUserByClerkIdSchema = z.infer<typeof GetUserByClerkIdSchema>
+export type TGetUserByIdSchema = z.infer<typeof GetUserByIdSchema>

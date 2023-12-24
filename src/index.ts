@@ -4,6 +4,7 @@ import { Server } from 'socket.io'
 import cors from 'cors'
 import { userRoute } from './routes/user.route'
 import { errorHandlingMiddleware } from './middlewares/error-handling.middleware'
+import { roomRoute } from './routes/room.route'
 
 const app = express()
 
@@ -11,6 +12,7 @@ app.use(cors())
 app.use(express.json())
 
 app.use('/api/users', userRoute)
+app.use('/api/rooms', roomRoute)
 
 app.use(errorHandlingMiddleware)
 
