@@ -8,19 +8,19 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  clerkId       String   @unique
-  email         String   @unique
-  username      String   @unique
-  name          String
-  picture       String
-  createdAt     DateTime @default(now())
-  player        Player?
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  clerkId   String   @unique
+  email     String   @unique
+  username  String   @unique
+  name      String
+  picture   String
+  createdAt DateTime @default(now())
+  player    Player?
 }
 
 model Room {
   id        String     @id @default(auto()) @map("_id") @db.ObjectId
-  roomCode  String
+  roomCode  String     @unique
   roomOwner String     @db.ObjectId
   players   Player[]
   gameObj   GameObj?

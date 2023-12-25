@@ -29,3 +29,5 @@ export type UpdateUserParams = Partial<User> & { clerkId: string }
 export type CreateRoomParams = { clerkId: string }
 
 export type LeaveRoomParams = { clerkId: string }
+
+export type JoinRoomParams = { clerkId: string; roomCode: string }

@@ -1,5 +1,5 @@
 import { PrismaClient, Room } from '@prisma/client'
-import { CreateRoomParams, LeaveRoomParams } from '~/helpers/params'
+import { CreateRoomParams, JoinRoomParams, LeaveRoomParams } from '~/helpers/params'
 import { userService } from './user.service'
 import { generateRoomCode } from '~/helpers/generate-room-code'
 import ApiError from '~/helpers/api-error'
@@ -82,10 +82,35 @@ const leaveRoom = async ({ clerkId }: LeaveRoomParams): Promise<Room> => {
   })
 }
 
+const joinRoom = async ({ clerkId, roomCode }: JoinRoomParams): Promise<Room> => {
+  const room = await prisma.room.findUnique({
+    where: { roomCode }
+  })
+
+  if (!room) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Could not find room!')
+  }
+
+  const user = await userService.getUserWithPlayerByClerkId({ clerkId })
+
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found!')
+  }
+
+  if (user.player?.roomId) {
+    await leaveRoom({ clerkId })
+  }
+
+  await playerService.createPlayer({ userId: user.id, roomId: room.id })
+
+  return room
+}
+
 const roomService = {
   createRoom,
   leaveRoom,
-  getRoomById
+  getRoomById,
+  joinRoom
 }
 
 export { roomService }
