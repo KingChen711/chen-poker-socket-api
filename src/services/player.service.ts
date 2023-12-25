@@ -3,7 +3,7 @@ import { CreatePlayerParams, DeletePlayerParams } from '~/helpers/params'
 
 const prisma = new PrismaClient()
 
-const deletePlayerByUserId = async ({ userId }: DeletePlayerParams): Promise<Player> => {
+const deletePlayerByUserId = async ({ userId }: DeletePlayerParams): Promise<Player | null> => {
   return await prisma.player.delete({
     where: { userId }
   })

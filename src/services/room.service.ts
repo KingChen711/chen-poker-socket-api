@@ -40,7 +40,7 @@ const getRoomById = async (id: string): Promise<Room | null> => {
   return room
 }
 
-const leaveRoom = async ({ clerkId }: LeaveRoomParams): Promise<Room> => {
+const leaveRoom = async ({ clerkId }: LeaveRoomParams) => {
   const user = await userService.getUserWithPlayerByClerkId({ clerkId })
 
   const roomId = user?.player?.roomId
@@ -68,18 +68,23 @@ const leaveRoom = async ({ clerkId }: LeaveRoomParams): Promise<Room> => {
     })
   }
 
-  if (room.roomOwner !== user.id) {
-    return room
+  if (room.roomOwner === user.id) {
+    await prisma.room.update({
+      where: {
+        id: room.id
+      },
+      data: {
+        roomOwner: room.players[0].userId
+      }
+    })
   }
 
-  return await prisma.room.update({
-    where: {
-      id: room.id
-    },
-    data: {
-      roomOwner: room.players[0].userId
-    }
-  })
+  if (room?.status === 'PRE_GAME') {
+    return
+  }
+
+  //TODO: clean game when a player has left
+  console.log('')
 }
 
 const joinRoom = async ({ clerkId, roomCode }: JoinRoomParams): Promise<Room> => {
@@ -91,6 +96,10 @@ const joinRoom = async ({ clerkId, roomCode }: JoinRoomParams): Promise<Room> =>
     throw new ApiError(StatusCodes.NOT_FOUND, 'Could not find room!')
   }
 
+  if (room.status !== 'PRE_GAME') {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Cannot join a room that is already in the game')
+  }
+
   const user = await userService.getUserWithPlayerByClerkId({ clerkId })
 
   if (!user) {
@@ -98,6 +107,9 @@ const joinRoom = async ({ clerkId, roomCode }: JoinRoomParams): Promise<Room> =>
   }
 
   if (user.player?.roomId) {
+    if (user.player.roomId === room.id) {
+      return room
+    }
     await leaveRoom({ clerkId })
   }
 
