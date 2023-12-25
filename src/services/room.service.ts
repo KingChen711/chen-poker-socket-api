@@ -5,6 +5,7 @@ import { generateRoomCode } from '~/helpers/generate-room-code'
 import ApiError from '~/helpers/api-error'
 import { StatusCodes } from 'http-status-codes'
 import { playerService } from './player.service'
+import { gameService } from './game.service'
 
 const prisma = new PrismaClient()
 
@@ -62,14 +63,14 @@ const leaveRoom = async ({ clerkId }: LeaveRoomParams) => {
   }
 
   if (room.players.length === 0) {
-    //last player leave room -> delete room
-    return await prisma.room.delete({
+    await prisma.room.delete({
       where: { id: room.id }
     })
+    return await gameService.emitGameChangeByRoomId(room.id)
   }
 
   if (room.roomOwner === user.id) {
-    await prisma.room.update({
+    const updatedRoom = await prisma.room.update({
       where: {
         id: room.id
       },
@@ -80,7 +81,7 @@ const leaveRoom = async ({ clerkId }: LeaveRoomParams) => {
   }
 
   if (room?.status === 'PRE_GAME') {
-    return
+    return await gameService.emitGameChangeByRoomId(room.id)
   }
 
   //TODO: clean game when a player has left
@@ -114,6 +115,8 @@ const joinRoom = async ({ clerkId, roomCode }: JoinRoomParams): Promise<Room> =>
   }
 
   await playerService.createPlayer({ userId: user.id, roomId: room.id })
+
+  await gameService.emitGameChangeByRoomId(room.id)
 
   return room
 }

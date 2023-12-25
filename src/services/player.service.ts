@@ -1,5 +1,5 @@
 import { Player, PrismaClient } from '@prisma/client'
-import { CreatePlayerParams, DeletePlayerParams } from '~/helpers/params'
+import { CreatePlayerParams, DeletePlayerParams, GetPlayersWithUserByRoomIdParams } from '~/helpers/params'
 
 const prisma = new PrismaClient()
 
@@ -18,6 +18,15 @@ const createPlayer = async ({ userId, roomId }: CreatePlayerParams): Promise<Pla
   })
 }
 
-const playerService = { deletePlayerByUserId, createPlayer }
+const getPlayersWithUserByRoomId = async ({ roomId }: GetPlayersWithUserByRoomIdParams) => {
+  return await prisma.player.findMany({
+    where: { roomId },
+    include: {
+      user: true
+    }
+  })
+}
+
+const playerService = { deletePlayerByUserId, createPlayer, getPlayersWithUserByRoomId }
 
 export { playerService }
