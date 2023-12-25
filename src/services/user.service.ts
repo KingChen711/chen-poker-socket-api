@@ -2,13 +2,11 @@ import { PrismaClient, User } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/helpers/api-error'
 import {
-  AssignCurrentRoomIdParams,
   CreateUserParams,
   DeleteUserParams,
   GetUserByClerkIdParams,
   GetUserByIdParams,
   GetUserWithPlayerByClerkIdParams,
-  RemoveCurrentRoomIdParams,
   UpdateUserParams
 } from '~/helpers/params'
 const prisma = new PrismaClient()

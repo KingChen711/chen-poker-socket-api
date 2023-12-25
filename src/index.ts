@@ -40,11 +40,9 @@ io.on('connect', (socket) => {
   })
 
   socket.on('leave-room', async (data) => {
-    if (data.clerkId) {
-      console.log('room-message', `${data.username} has left the room!`)
-      socket.leave(data.roomId)
-      await roomService.leaveRoom({ clerkId: data.clerkId })
-      io.to(data.roomId).emit('room-message', `${data.username} has left the room!`)
-    }
+    console.log('room-message', `${data.username} has left the room!`)
+    socket.leave(data.roomId)
+    await roomService.leaveRoom({ clerkId: data.clerkId })
+    io.to(data.roomId).emit('room-message', `${data.username} has left the room!`)
   })
 })

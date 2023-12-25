@@ -33,3 +33,5 @@ export type LeaveRoomParams = { clerkId: string }
 export type JoinRoomParams = { clerkId: string; roomCode: string }
 
 export type GetPlayersWithUserByRoomIdParams = { roomId: string }
+
+export type StartGameParams = { roomId: string }

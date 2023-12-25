@@ -41,6 +41,18 @@ const getRoomById = async (id: string): Promise<Room | null> => {
   return room
 }
 
+const getRequiredRoomById = async (id: string): Promise<Room> => {
+  const room = await prisma.room.findUnique({
+    where: { id }
+  })
+
+  if (!room) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Room not found!')
+  }
+
+  return room
+}
+
 const leaveRoom = async ({ clerkId }: LeaveRoomParams) => {
   const user = await userService.getUserWithPlayerByClerkId({ clerkId })
 
@@ -70,7 +82,7 @@ const leaveRoom = async ({ clerkId }: LeaveRoomParams) => {
   }
 
   if (room.roomOwner === user.id) {
-    const updatedRoom = await prisma.room.update({
+    await prisma.room.update({
       where: {
         id: room.id
       },
@@ -125,7 +137,8 @@ const roomService = {
   createRoom,
   leaveRoom,
   getRoomById,
-  joinRoom
+  joinRoom,
+  getRequiredRoomById
 }
 
 export { roomService }
