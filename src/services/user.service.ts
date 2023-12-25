@@ -2,10 +2,13 @@ import { PrismaClient, User } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/helpers/api-error'
 import {
+  AssignCurrentRoomIdParams,
   CreateUserParams,
   DeleteUserParams,
   GetUserByClerkIdParams,
   GetUserByIdParams,
+  GetUserWithPlayerByClerkIdParams,
+  RemoveCurrentRoomIdParams,
   UpdateUserParams
 } from '~/helpers/params'
 const prisma = new PrismaClient()
@@ -63,13 +66,25 @@ const getUserById = async (params: GetUserByIdParams): Promise<User | null> => {
   })
 }
 
+const getUserWithPlayerByClerkId = async (params: GetUserWithPlayerByClerkIdParams) => {
+  return await prisma.user.findUnique({
+    where: {
+      clerkId: params.clerkId
+    },
+    include: {
+      player: true
+    }
+  })
+}
+
 const userService = {
   createUser,
   updateUser,
   deleteUser,
   getUserByClerkId,
   getUserById,
-  getRequiredUserByClerkId
+  getRequiredUserByClerkId,
+  getUserWithPlayerByClerkId
 }
 
 export { userService }

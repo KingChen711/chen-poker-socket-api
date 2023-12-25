@@ -8,17 +8,21 @@ export type CreateUserParams = {
   username: string
 }
 
-export type DeleteUserParams = {
-  clerkId: string
-}
+export type DeleteUserParams = { clerkId: string }
 
-export type GetUserByClerkIdParams = {
-  clerkId: string
-}
+export type DeletePlayerParams = { userId: string }
 
-export type GetUserByIdParams = {
-  id: string
-}
+export type CreatePlayerParams = { userId: string; roomId: string }
+
+export type GetUserByClerkIdParams = { clerkId: string }
+
+export type GetUserByIdParams = { id: string }
+
+export type GetUserWithPlayerByClerkIdParams = { clerkId: string }
+
+export type RemoveCurrentRoomIdParams = { userId: string }
+
+export type AssignCurrentRoomIdParams = { userId: string; roomId: string }
 
 export type UpdateUserParams = Partial<User> & { clerkId: string }
 

@@ -5,6 +5,7 @@ import cors from 'cors'
 import { userRoute } from './routes/user.route'
 import { errorHandlingMiddleware } from './middlewares/error-handling.middleware'
 import { roomRoute } from './routes/room.route'
+import { gameRoute } from './routes/game.route'
 
 const app = express()
 
@@ -13,6 +14,7 @@ app.use(express.json())
 
 app.use('/api/users', userRoute)
 app.use('/api/rooms', roomRoute)
+app.use('/api/games', gameRoute)
 
 app.use(errorHandlingMiddleware)
 
@@ -23,11 +25,15 @@ const io = new Server(server, {
   }
 })
 
-io.on('connect', () => {
-  console.log('some one connect')
-})
-io.on('disconnect', () => {
-  console.log('some one disconnect')
+io.on('connect', (socket) => {
+  console.log(`some one connect: ${socket.id}`)
+
+  socket.on('join-room', (data) => {
+    console.log('room-message', `${data.username} joins the room!`)
+
+    socket.join(data.roomId)
+    io.to(data.roomId).emit('room-message', `${data.username} joins the room!`)
+  })
 })
 
 const PORT = process.env.PORT || 5000

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { roomService } from '~/services/room.service'
-import { TCreateRoomSchema, TLeaveRoomSchema } from '~/validations/room.validation'
+import { TCreateRoomSchema, TGetRoomByIdSchema, TLeaveRoomSchema } from '~/validations/room.validation'
 
 export const createRoom = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -26,6 +26,20 @@ export const leaveRoom = async (req: Request, res: Response, next: NextFunction)
     await roomService.leaveRoom({ clerkId })
 
     res.status(StatusCodes.OK).json({ message: 'You have leave the room' })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getRoomById = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const {
+      params: { id }
+    } = req as unknown as TGetRoomByIdSchema
+
+    const room = await roomService.getRoomById(id)
+
+    res.status(StatusCodes.OK).json({ room })
   } catch (error) {
     next(error)
   }

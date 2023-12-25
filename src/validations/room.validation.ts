@@ -12,5 +12,12 @@ export const LeaveRoomSchema = z.object({
   })
 })
 
+export const GetRoomByIdSchema = z.object({
+  params: z.object({
+    id: z.coerce.string().trim()
+  })
+})
+
 export type TCreateRoomSchema = z.infer<typeof CreateRoomSchema>
 export type TLeaveRoomSchema = z.infer<typeof LeaveRoomSchema>
+export type TGetRoomByIdSchema = z.infer<typeof GetRoomByIdSchema>
