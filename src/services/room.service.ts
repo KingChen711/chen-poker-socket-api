@@ -92,8 +92,10 @@ const leaveRoom = async ({ clerkId }: LeaveRoomParams) => {
     })
   }
 
+  await gameService.emitGameChangeByRoomId(room.id)
+
   if (room?.status === 'PRE_GAME') {
-    return await gameService.emitGameChangeByRoomId(room.id)
+    return
   }
 
   //TODO: clean game when a player has left

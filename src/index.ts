@@ -42,7 +42,11 @@ io.on('connect', (socket) => {
   socket.on('leave-room', async (data) => {
     console.log('room-message', `${data.username} has left the room!`)
     socket.leave(data.roomId)
-    await roomService.leaveRoom({ clerkId: data.clerkId })
+    try {
+      await roomService.leaveRoom({ clerkId: data.clerkId })
+    } catch (error) {
+      console.log('error')
+    }
     io.to(data.roomId).emit('room-message', `${data.username} has left the room!`)
   })
 })
