@@ -5,6 +5,20 @@ export type Game = {
   players: Player[]
 }
 
+export enum Rank {
+  Fold = -1,
+  HighCard,
+  OnePair,
+  TwoPair,
+  ThreeOfKind,
+  Straight,
+  Flush,
+  FullHouse,
+  FourOfKind,
+  StraightFlush,
+  RoyalFlush
+}
+
 export enum CardValue {
   Two = 2,
   Three = 3,

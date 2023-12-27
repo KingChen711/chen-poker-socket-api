@@ -40,6 +40,10 @@ export type CallBetParams = { roomId: string; userId: string }
 
 export type CheckBetParams = { roomId: string; userId: string }
 
+export type FoldBetParams = { roomId: string; userId: string }
+
+export type RaiseBetParams = { roomId: string; userId: string; raiseValue: number }
+
 export type GameChange = { gameObj: GameObj; status: GameStatus }
 
-export type ToNextRoundParams = { gameChange: GameChange; players: Player[] }
+export type ToNextRoundParams = { gameChange: GameChange; players: Player[]; requestingPlayers?: Player }

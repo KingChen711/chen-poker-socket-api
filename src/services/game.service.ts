@@ -1,13 +1,23 @@
-import { GameObj, Player, PrismaClient, Room } from '@prisma/client'
+import { GameObj, Player, Prisma, PrismaClient, Room } from '@prisma/client'
 import { playerService } from './player.service'
 import { io } from '..'
-import { CallBetParams, CheckBetParams, GameChange, StartGameParams, ToNextRoundParams } from '~/helpers/params'
+import {
+  CallBetParams,
+  CheckBetParams,
+  FoldBetParams,
+  GameChange,
+  RaiseBetParams,
+  StartGameParams,
+  ToNextRoundParams
+} from '~/helpers/params'
 import { BigBlindValue, InitialBalance, SmallBlindValue, deck } from '~/helpers/constants'
 import { drawCard } from '~/helpers/game'
-import { Game } from '~/types'
+import { Game, Rank } from '~/types'
 import { roomService } from './room.service'
 import ApiError from '~/helpers/api-error'
 import { StatusCodes } from 'http-status-codes'
+import { assignRankHand } from '~/helpers/poker/assign-rank-hand'
+import { compareHand } from '~/helpers/poker/compare'
 
 const prisma = new PrismaClient()
 
@@ -37,14 +47,17 @@ const callBet = async ({ roomId, userId }: CallBetParams) => {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Maybe the game is not started')
   }
 
-  const updatedDataCallingPlayer = {
-    balance: callingPlayer.balance! - gameObj.callingValue + callingPlayer.bet!,
-    bet: gameObj.callingValue
-  }
+  await prisma.player.update({
+    where: { id: callingPlayer.id },
+    data: {
+      balance: callingPlayer.balance! - gameObj.callingValue + callingPlayer.bet!,
+      bet: gameObj.callingValue
+    }
+  })
 
   let updatedDataRoom = {
     gameObj: {
-      ...room.gameObj,
+      ...gameObj,
       turn: getNextTurn(gameObj, players)
     },
     status: room.status
@@ -59,20 +72,14 @@ const callBet = async ({ roomId, userId }: CallBetParams) => {
   )
 
   if (!playerWhoNeedToCall) {
-    updatedDataRoom = toNextRound({ gameChange: updatedDataRoom, players })
+    updatedDataRoom = await toNextRound({ gameChange: updatedDataRoom, players })
   }
 
-  const updateCallingPlayerPromise = prisma.player.update({
-    where: { id: callingPlayer.id },
-    data: updatedDataCallingPlayer
-  })
-
-  const updateRoomPromise = prisma.room.update({
+  await prisma.room.update({
     where: { id: room.id },
     data: updatedDataRoom
   })
 
-  await Promise.all([updateCallingPlayerPromise, updateRoomPromise])
   await gameService.emitGameChangeByRoomId(room.id)
 }
 
@@ -94,7 +101,7 @@ const checkBet = async ({ roomId, userId }: CheckBetParams) => {
 
   let updatedDataRoom = {
     gameObj: {
-      ...room.gameObj,
+      ...gameObj,
       checkingPlayers: [...gameObj.checkingPlayers, userId],
       turn: getNextTurn(gameObj, players)
     },
@@ -106,15 +113,100 @@ const checkBet = async ({ roomId, userId }: CheckBetParams) => {
     gameObj.checkingPlayers.length + 1 + gameObj.foldPlayers.length + gameObj.allInPlayers.length === players.length
 
   if (conditionEndRound) {
-    updatedDataRoom = toNextRound({ gameChange: updatedDataRoom, players })
+    updatedDataRoom = await toNextRound({ gameChange: updatedDataRoom, players })
   }
 
-  await prisma.room.update({
+  const updatedRoom = await prisma.room.update({
     where: { id: room.id },
     data: updatedDataRoom
   })
 
+  io.to(room.id).emit('room-change', updatedRoom)
+}
+
+const raiseBet = async ({ roomId, userId, raiseValue }: RaiseBetParams) => {
+  const room = await roomService.getRequiredRoomById(roomId)
+  const players = await playerService.getPlayersWithUserByRoomId({ roomId: room.id })
+
+  const raisingPlayer = players.find((p) => p.userId === userId)
+
+  if (!raisingPlayer) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'This user is not a player of the room.')
+  }
+
+  const gameObj = room.gameObj
+
+  if (!gameObj) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Maybe the game is not started')
+  }
+
+  const updateCallingPlayerPromise = prisma.player.update({
+    where: { id: raisingPlayer.id },
+    data: {
+      balance: raisingPlayer.balance! + raisingPlayer.bet! - raiseValue - gameObj.callingValue,
+      bet: gameObj.callingValue + raiseValue
+    }
+  })
+
+  const updateRoomPromise = prisma.room.update({
+    where: { id: room.id },
+    data: {
+      gameObj: {
+        ...gameObj,
+        callingValue: gameObj.callingValue + raiseValue,
+        checkingPlayers: [],
+        turn: getNextTurn(gameObj, players)
+      }
+    }
+  })
+
+  await Promise.all([updateCallingPlayerPromise, updateRoomPromise])
   await gameService.emitGameChangeByRoomId(room.id)
+}
+
+const foldBet = async ({ roomId, userId }: FoldBetParams) => {
+  const room = await roomService.getRequiredRoomById(roomId)
+  const players = await playerService.getPlayersWithUserByRoomId({ roomId: room.id })
+
+  const foldingPlayer = players.find((p) => p.userId === userId)
+
+  if (!foldingPlayer) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'This user is not a player of the room.')
+  }
+
+  const gameObj = room.gameObj
+
+  if (!gameObj) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Maybe the game is not started')
+  }
+
+  let updatedDataRoom = {
+    gameObj: {
+      ...gameObj,
+      foldPlayers: [...gameObj.foldPlayers, userId],
+      turn: getNextTurn(gameObj, players)
+    },
+    status: room.status
+  } as GameChange
+
+  if (players.length - gameObj.foldPlayers.length === 2) {
+    //it mean that the foldingPlayer folds when only rest 2 player -> need to showdown
+    updatedDataRoom = await showDownFold({ gameChange: updatedDataRoom, players })
+  } else {
+    const conditionEndRound =
+      gameObj.checkingPlayers.length + gameObj.foldPlayers.length + 1 + gameObj.allInPlayers.length === players.length
+
+    if (conditionEndRound) {
+      updatedDataRoom = await toNextRound({ gameChange: updatedDataRoom, players })
+    }
+  }
+
+  const updatedRoom = await prisma.room.update({
+    where: { id: room.id },
+    data: updatedDataRoom
+  })
+
+  io.to(room.id).emit('room-change', updatedRoom)
 }
 
 const emitGameChangeByRoomId = async (id: string) => {
@@ -196,7 +288,7 @@ export function getNextTurn(gameObj: GameObj, players: Player[]) {
   return turnInCreaseAmount + gameObj.turn
 }
 
-export function toNextRound({ gameChange, players }: ToNextRoundParams): GameChange {
+export async function toNextRound({ gameChange, players }: ToNextRoundParams): Promise<GameChange> {
   if (gameChange.status === 'PRE_FLOP') {
     return toTheFlop({ gameChange, players })
   }
@@ -206,7 +298,7 @@ export function toNextRound({ gameChange, players }: ToNextRoundParams): GameCha
   }
 
   if (gameChange.status === 'THE_RIVER') {
-    return toShowDown({ gameChange, players })
+    return await toShowDown({ gameChange, players })
   }
 
   return gameChange //not-aspects
@@ -239,10 +331,86 @@ export function toTheTurnOrRiver({ gameChange, players }: ToNextRoundParams): Ga
   return gameChange
 }
 
-export function toShowDown({ gameChange, players }: ToNextRoundParams): GameChange {
+export async function toShowDown({ gameChange, players: ps }: ToNextRoundParams): Promise<GameChange> {
+  let pot = 0
+  const players = await playerService.getPlayersWithUserByRoomId({ roomId: ps[0].roomId })
+  const updatePlayersPromise = players.map((p) => {
+    pot += p.bet!
+    const newHand = assignRankHand(p.hand!, gameChange.gameObj.communityCards)
+    if (gameChange.gameObj.foldPlayers.includes(p.userId)) {
+      newHand.rank = Rank.Fold
+    }
+    return prisma.player.update({
+      where: { id: p.id },
+      data: {
+        bet: 0,
+        hand: newHand
+      }
+    })
+  })
+
+  const updatedPlayers = await Promise.all(updatePlayersPromise)
+
+  gameChange.status = 'SHOWDOWN'
+  gameChange.gameObj.checkingPlayers = []
+  gameChange.gameObj.winner = [...updatedPlayers].sort((p1, p2) => {
+    return compareHand(p1.hand!, p2.hand!)
+  })[0].userId
+
+  const winner = updatedPlayers.find((p) => p.userId === gameChange.gameObj.winner)!
+  await prisma.player.update({
+    where: { id: winner.id },
+    data: {
+      balance: winner.balance! + pot
+    }
+  })
+
   return gameChange
 }
 
-const gameService = { getGameByRoomId, emitGameChangeByRoomId, startGame, callBet, checkBet }
+export async function showDownFold({ gameChange, players }: ToNextRoundParams): Promise<GameChange> {
+  gameChange.gameObj.winner = players.find((p) => !gameChange.gameObj.foldPlayers.includes(p.userId))!.userId
+  gameChange.gameObj.checkingPlayers = []
+  const amountNeedDrawMore = 5 - gameChange.gameObj.communityCards.length
+  gameChange.gameObj.communityCards = [
+    ...gameChange.gameObj.communityCards,
+    ...drawCard(gameChange.gameObj.deck, amountNeedDrawMore)
+  ]
+
+  let pot = 0
+  gameChange.status = 'SHOWDOWN'
+
+  const updatePlayersPromise = players.map((p) => {
+    pot += p.bet!
+    let newHand = { ...p.hand! }
+    if (p.userId !== gameChange.gameObj.winner) {
+      newHand.rank = Rank.Fold
+    } else {
+      newHand = assignRankHand(newHand, gameChange.gameObj.communityCards)
+    }
+
+    return prisma.player.update({
+      where: { id: p.id },
+      data: {
+        bet: 0,
+        hand: newHand
+      }
+    })
+  })
+
+  const updatedPlayers = await Promise.all(updatePlayersPromise)
+
+  const winner = updatedPlayers.find((p) => p.userId === gameChange.gameObj.winner)!
+  await prisma.player.update({
+    where: { id: winner.id },
+    data: {
+      balance: winner.balance! + pot
+    }
+  })
+
+  return gameChange
+}
+
+const gameService = { getGameByRoomId, emitGameChangeByRoomId, startGame, callBet, checkBet, raiseBet, foldBet }
 
 export { gameService }
