@@ -11,7 +11,7 @@ export const getGameByRoomId = async (req: Request, res: Response, next: NextFun
 
     const game = await gameService.getGameByRoomId(roomId)
 
-    res.status(StatusCodes.OK).json({ game })
+    res.status(StatusCodes.OK).json({ statusCode: StatusCodes.OK, game })
   } catch (error) {
     next(error)
   }
@@ -25,7 +25,7 @@ export const startGame = async (req: Request, res: Response, next: NextFunction)
 
     const game = await gameService.startGame({ roomId })
 
-    res.status(StatusCodes.OK).json({ game })
+    res.status(StatusCodes.OK).json({ statusCode: StatusCodes.OK, game })
   } catch (error) {
     next(error)
   }

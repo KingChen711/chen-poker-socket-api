@@ -51,7 +51,7 @@ const startGame = async ({ roomId }: StartGameParams) => {
     winner: null
   }
 
-  const updatePlayerPromises = players.map((p) => {
+  const updatePlayersPromises = players.map((p) => {
     return prisma.player.update({
       where: { id: p.id },
       data: {
@@ -67,15 +67,15 @@ const startGame = async ({ roomId }: StartGameParams) => {
     })
   })
 
-  await Promise.all(updatePlayerPromises)
-
-  await prisma.room.update({
+  const updateRoomPromises = prisma.room.update({
     where: { id: roomId },
     data: {
       status: 'PRE_FLOP',
       gameObj
     }
   })
+
+  await Promise.all([...updatePlayersPromises, updateRoomPromises])
 
   await emitGameChangeByRoomId(roomId)
 }

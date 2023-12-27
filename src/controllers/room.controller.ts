@@ -11,7 +11,7 @@ export const createRoom = async (req: Request, res: Response, next: NextFunction
 
     const room = await roomService.createRoom({ clerkId })
 
-    res.status(StatusCodes.OK).json({ room })
+    res.status(StatusCodes.OK).json({ statusCode: StatusCodes.OK, room })
   } catch (error) {
     next(error)
   }
@@ -25,7 +25,7 @@ export const leaveRoom = async (req: Request, res: Response, next: NextFunction)
 
     await roomService.leaveRoom({ clerkId })
 
-    res.status(StatusCodes.OK).json({ message: 'You have leave the room' })
+    res.status(StatusCodes.OK).json({ statusCode: StatusCodes.OK, message: 'You have leave the room' })
   } catch (error) {
     next(error)
   }
@@ -39,7 +39,7 @@ export const getRoomById = async (req: Request, res: Response, next: NextFunctio
 
     const room = await roomService.getRoomById(id)
 
-    res.status(StatusCodes.OK).json({ room })
+    res.status(StatusCodes.OK).json({ statusCode: StatusCodes.OK, room })
   } catch (error) {
     next(error)
   }
@@ -53,7 +53,7 @@ export const joinRoom = async (req: Request, res: Response, next: NextFunction) 
 
     const room = await roomService.joinRoom({ clerkId, roomCode })
 
-    res.status(StatusCodes.OK).json({ room })
+    res.status(StatusCodes.OK).json({ statusCode: StatusCodes.OK, room })
   } catch (error) {
     next(error)
   }
