@@ -1,4 +1,4 @@
-import { User } from '@prisma/client'
+import { GameObj, GameStatus, Player, User } from '@prisma/client'
 
 export type CreateUserParams = {
   clerkId: string
@@ -35,3 +35,11 @@ export type JoinRoomParams = { clerkId: string; roomCode: string }
 export type GetPlayersWithUserByRoomIdParams = { roomId: string }
 
 export type StartGameParams = { roomId: string }
+
+export type CallBetParams = { roomId: string; userId: string }
+
+export type CheckBetParams = { roomId: string; userId: string }
+
+export type GameChange = { gameObj: GameObj; status: GameStatus }
+
+export type ToNextRoundParams = { gameChange: GameChange; players: Player[] }

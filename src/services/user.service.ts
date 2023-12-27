@@ -75,6 +75,20 @@ const getUserWithPlayerByClerkId = async (params: GetUserWithPlayerByClerkIdPara
   })
 }
 
+const getRequiredUserByUserId = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      clerkId: userId
+    }
+  })
+
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Not found user!')
+  }
+
+  return user
+}
+
 const userService = {
   createUser,
   updateUser,
@@ -82,7 +96,8 @@ const userService = {
   getUserByClerkId,
   getUserById,
   getRequiredUserByClerkId,
-  getUserWithPlayerByClerkId
+  getUserWithPlayerByClerkId,
+  getRequiredUserByUserId
 }
 
 export { userService }

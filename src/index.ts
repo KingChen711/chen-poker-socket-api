@@ -30,17 +30,12 @@ export const io = new Server(server, {
 })
 
 io.on('connect', (socket) => {
-  console.log(`some one connect: ${socket.id}`)
-
   socket.on('join-room', (data) => {
-    console.log('room-message', `${data.username} has joined the room!`)
-
     socket.join(data.roomId)
     io.to(data.roomId).emit('room-message', `${data.username} has joined the room!`)
   })
 
   socket.on('leave-room', async (data) => {
-    console.log('room-message', `${data.username} has left the room!`)
     socket.leave(data.roomId)
     try {
       await roomService.leaveRoom({ clerkId: data.clerkId })
