@@ -7,7 +7,9 @@ import {
   TFoldBetSchema,
   TGetGameByRoomIdSchema,
   TStartGameSchema,
-  TRaiseBetSchema
+  TRaiseBetSchema,
+  TAllInBetSchema,
+  TReadyNextMatchSchema
 } from '~/validations/game.validation'
 
 export const getGameByRoomId = async (req: Request, res: Response, next: NextFunction) => {
@@ -87,6 +89,34 @@ export const foldBet = async (req: Request, res: Response, next: NextFunction) =
     } = req as unknown as TFoldBetSchema
 
     await gameService.foldBet({ roomId, userId })
+
+    res.status(StatusCodes.OK).json({ statusCode: StatusCodes.OK })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const allInBet = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const {
+      body: { roomId, userId }
+    } = req as unknown as TAllInBetSchema
+
+    await gameService.allInBet({ roomId, userId })
+
+    res.status(StatusCodes.OK).json({ statusCode: StatusCodes.OK })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const readyNextMatch = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const {
+      body: { roomId, userId }
+    } = req as unknown as TReadyNextMatchSchema
+
+    await gameService.readyNextMatch({ roomId, userId })
 
     res.status(StatusCodes.OK).json({ statusCode: StatusCodes.OK })
   } catch (error) {

@@ -41,9 +41,25 @@ export const FoldBetSchema = z.object({
   })
 })
 
+export const AllInBetSchema = z.object({
+  body: z.object({
+    roomId: z.coerce.string().trim(),
+    userId: z.coerce.string().trim()
+  })
+})
+
+export const ReadyNextMatchSchema = z.object({
+  body: z.object({
+    roomId: z.coerce.string().trim(),
+    userId: z.coerce.string().trim()
+  })
+})
+
 export type TGetGameByRoomIdSchema = z.infer<typeof GetGameByRoomIdSchema>
 export type TStartGameSchema = z.infer<typeof StartGameSchema>
 export type TCallBetSchema = z.infer<typeof CallBetSchema>
 export type TCheckBetSchema = z.infer<typeof CheckBetSchema>
 export type TRaiseBetSchema = z.infer<typeof RaiseBetSchema>
 export type TFoldBetSchema = z.infer<typeof FoldBetSchema>
+export type TAllInBetSchema = z.infer<typeof AllInBetSchema>
+export type TReadyNextMatchSchema = z.infer<typeof ReadyNextMatchSchema>

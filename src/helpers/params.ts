@@ -42,6 +42,10 @@ export type CheckBetParams = { roomId: string; userId: string }
 
 export type FoldBetParams = { roomId: string; userId: string }
 
+export type AllInBetParams = { roomId: string; userId: string }
+
+export type ReadyNextMatchParams = { roomId: string; userId: string }
+
 export type RaiseBetParams = { roomId: string; userId: string; raiseValue: number }
 
 export type GameChange = { gameObj: GameObj; status: GameStatus }
