@@ -124,7 +124,7 @@ const checkBet = async ({ roomId, userId }: CheckBetParams) => {
     data: updatedDataRoom
   })
 
-  io.to(room.id).emit('room-change', updatedRoom)
+  await gameService.emitGameChangeByRoomId(room.id)
 }
 
 const raiseBet = async ({ roomId, userId, raiseValue }: RaiseBetParams) => {
@@ -209,7 +209,7 @@ const foldBet = async ({ roomId, userId }: FoldBetParams) => {
     data: updatedDataRoom
   })
 
-  io.to(room.id).emit('room-change', updatedRoom)
+  await gameService.emitGameChangeByRoomId(room.id)
 }
 
 const allInBet = async ({ roomId, userId }: AllInBetParams) => {
